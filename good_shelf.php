@@ -1,82 +1,235 @@
 <?php
+
 /*
  * Plugin Name: Good Shelf
-Plugin URI: http://richardhole.co.uk/
-Description: An RSS Reader created especially for good reads books
-Author: Richard Hole
-Version: 0.5
-Author URI: richardhole.co.uk
+  Plugin URI: http://richardhole.co.uk/
+  Description: A plugin to display books from any given Goddreads.com shelf
+  Author: Richard Hole
+  Version: 1.0
+  Author URI: http://richardhole.co.uk
  * */
 
+/* * **This is where the action begins*** */
 
-//usage [shelf feed="http://feedurl.com/feed.rss" img="true/false" txt="true/false"
-//feed = the URL to the feed
-////num = number of items to display
-//img = display image?
-//txt = display title?
-
-
-/****shortcode function***/
-function shelf($atts) {
-    extract(shortcode_atts(array(
-            'feed' => 'http://www.goodreads.com/review/list_rss/1553338-rich?key=ca4096c415fb92313ccd9a8e67a59cbcc1c8ccf1&shelf=currently-reading',//the default
-            'num' => '1',//defualt
-            'img' => True,
-            'txt' => True
-            ) , $atts));
+//$newShelf = new GoodShelf();
+//$shelves = GetShelves(); //Get the users shelves
+//$shelf = get_option($option); //Get selected shelf (saved in db).
+//$books = GetBooks($shelf, '4', '1');
+//displayShelf($books);
 
 
-    function fetch_feed_modified($url,$num,$img,$txt) {
-        require_once  (ABSPATH . WPINC . '/class-feed.php');//include simplePie class
-        $feed = new SimplePie();//create the class object
-        $feed->set_feed_url($url);//set the feed url
-        $feed->set_cache_class('WP_Feed_Cache');//feed cache
-        $feed->set_file_class('WP_SimplePie_File');//the class
-        $feed->set_cache_duration(apply_filters('wp_feed_cache_transient_lifetime', 43200));
-        $feed->init();
-        $feed->handle_content_type();
+class GoodShelf extends WP_Widget {
 
-        ob_start();//put it in a buffer
-        if ( $feed->error() )
-            printf ('There was an error while connecting to Feed server, please, try again!');
+    /** constructor * */
+    function GoodShelf() {
+        parent::WP_Widget(false, 'Good Shelf', array('description' => 'display books from any given Goddreads.com shelf', 'class' => 'good-shelf-class textwidget'));
+    }
 
-        foreach ($feed->get_items(0,$num) as $item) {
-           if($img == True) {printf('<a href="%s"><img src="%s" class="good_img" /></a>', $item->get_permalink(),scrapeImage($item->get_description()));}//get image
-            if($txt == True){printf('<a href="%s">%s</a>',$item->get_permalink(), $item->get_title());}//Get link
-        
+    function goodShelfWidget($args) {
+        // widget actual processes
+        extract($args);
+    }
 
+    function form($instance) {// outputs the options form on admin
+        //check that an ID has been added. If not use my ID (hope to change this in future)
+        if (empty($instance['good_user_id'])) {
+            $instance['good_user_id'] = '1553338';
         }
-        $content = ob_get_contents();//Get the contents that was just output
-        ob_end_clean();//clean the buffer
-        return $content;//return the content of the buffer
-    }
 
-//Get the uRL of the image
-    function scrapeImage($text) {
-        $pattern = '/src=[\'"]?([^\'" >]+)[\'" >]/';//preg for image URL
-        preg_match($pattern, $text, $link);//match it
-        if(empty($link))
-            $link = 'http://default-image-location.com/some-image.jpg';
-        else
-            $link = $link[1];
-        return $link;
-    }
-
-    function ms_smallpie_feed($uri,$num,$img,$txt) {
-        if(function_exists('fetch_feed_modified')) {
-            $content = fetch_feed_modified($uri,$num,$img,$txt);//grab the feed
-            return($content);//grab the content
+        //check that an ID has been added. If not use my ID (hopeto change this in future)
+        if (empty($instance['no_items'])) {
+            $instance['no_items'] = '5';
         }
+
+//Title. $this->get_field_id('title') = id of tile field in db. $this->get_field_name('title') = name of field in db. $instance['title'] = the data stored in DB
+        echo '<p><label for="' . $this->get_field_id('title') . '">Title: </label><input class="widefat" id="' . $this->get_field_id('title') . '" name="' . $this->get_field_name('title') . '" type="text" value="' . attribute_escape($instance['title']) . '" /></p>';
+
+        //User ID.
+        echo '<p><label for="' . $this->get_field_id('good_user_id') . '">GoodReads user ID: <br /> <input size="15"  id="' . $this->get_field_id('good_user_id') . '" name="' . $this->get_field_name('good_user_id') . '" type="text" value="' . attribute_escape($instance['good_user_id']) . '" /></label></p>';
+
+
+        //No of items.
+        echo '<p><label for="' . $this->get_field_id('no_items') . '">No of items displayed?: <br /><input size="2" maxlength="2" id="' . $this->get_field_id('no_items') . '" name="' . $this->get_field_name('no_items') . '" type="text" value="' . attribute_escape($instance['no_items']) . '" /></label></p>';
+
+
+        /*         * *shelf dropdown** */
+        //label
+        echo '<p><label for="' . $this->get_field_id('shelf') . '">Shelf:</label><br />';
+
+
+
+//get a list of users shelves
+        $shelves = GetShelves($instance['good_user_id']);
+
+
+//begin the dropdown
+        echo '<select name="' . $this->get_field_name('shelf') . '">'; //dropdown start
+        //count number of shelves
+        $cnt = count($shelves); //Count number of items in array
+        //loop through the shelves and display them as an option. Display by default the option stored in the DB.
+        for ($i = 0; $i < $cnt; $i++) {
+
+            if ($instance['shelf'] == $shelves[$i]) {
+                echo '<option value="' . $shelves[$i] . '" selected>' . $shelves[$i] . '</option>';
+            } elseif (empty($instance['shelf'])) {
+                echo '<option value="currently-reading" selected>currently-reading</option>';
+            } else {
+                echo "<option value=" . $shelves[$i] . ">$shelves[$i]</option>";
+            }
+        }
+
+        echo '</select></p>'; //dropdown end
+
+        /*         * display options dropdown** */
+        //label
+        echo '<p><label for="' . $this->get_field_id('display_options') . '">Display as:</label><br />';
+        echo '<select name="' . $this->get_field_name('display_options') . '">'; //dropdown start
+
+        if ($instance['display_options'] == 'cover art' || empty($instance['display_options'])) {
+            echo '<option value="cover art" selected>Cover art</option>';
+            echo '<option value="link List">Link list</option>';
+        } elseif ($instance['display_options'] == 'linklist') {
+            echo '<option value="cover art">Cover art</option>';
+            echo '<option value="link List" selected>Link list</option>';
+        }
+
+        echo '</select></p>'; //dropdown end
     }
 
-    $content = ms_smallpie_feed($feed,$num,$img,$txt);//call the smallpie feed function to get results
-    return($content);
+    function update($new_instance, $old_instance) {
+        // processes widget options to be saved
+        $instance = $old_instance;
+        //strip tags
+        $instance['title'] = strip_tags($new_instance['title']);
+        $instance['shelf'] = strip_tags($new_instance['shelf']);
+        $instance['no_items'] = strip_tags($new_instance['no_items']);
+        $instance['good_user_id'] = strip_tags($new_instance['good_user_id']);
+        $instance['no_items'] = strip_tags($new_instance['no_items']);
+        return $instance;
+    }
+
+    function widget($args, $instance) {
+        //**** outputs the content of the widget****
+        extract($args, EXTR_SKIP);
+
+        //before the widget content
+        echo $before_widget;
+
+        //the title, called from the database. If it's empty then diplay a non-breaking space
+        $title = empty($instance['title']) ? '&nbsp;' : apply_filters('widget_title', $instance['title']);
+        if (!empty($title)) {
+            echo $before_title . $title . $after_title;
+        }
+
+        //get books
+        $books = GetBooks($instance['shelf'], $instance['good_user_id'], $instance['no_items']);
+        $cnt = count($books);
+
+        //Display a list of links to books if it has been selected else display cover images
+        if ($instance['display_options' == 'link list']) {
+            echo '<ul class="goodreads">';
+            for ($i = 0; $i < $cnt; $i++) {
+                echo '<li><a href="' . $books[$i]['link'] . '" title="' . $books[$i]['title'] . '">' . $books[$i]['title'] . '</a></li>';
+            }
+            echo '</ul>';
+        } else {
+            for ($i = 0; $i < $cnt; $i++) {
+                echo '<a href="' . $books[$i]['link'] . '" title="' . $books[$i]['title'] . '"><img src="' . $books[$i]['image'] . '" alt="' . $books[$i]['title'] . '" /></a>&nbsp;';
+            }
+        }
+
+        //link to goodreads. This must remain as it is stated in their terms of service
+        echo '<p class="goodreads_power"><a href="http://goodreads.com" title="Goodreads.com">Provided by Goodreads</a></p>';
+
+        //close the widget
+        echo $after_widget;
+    }
 
 }
 
-add_shortcode('shelf', 'shelf');
-add_filter( 'widget_text', 'shortcode_unautop');
-add_filter('widget_text', 'do_shortcode');
+//end class
+//Register widget function
+function registerwidget() {
+    register_widget('GoodShelf');
+    //wp_register_sidebar_widget("GoodShelf","Good Shelf",'WidgetCall');
+}
 
+// register widget
+add_action('widgets_init', 'registerwidget');
+
+
+
+
+/* * **Get a list of the Users Shelves*** */
+
+function GetShelves($good_user_id) {
+
+    $good_user_id = strip_tags($good_user_id);
+
+    //Initialize the cURL session
+    $ch = curl_init();
+
+    //set URL. params. key = API Key. user_id = user id
+    curl_setopt($ch, CURLOPT_URL,
+            "http://www.goodreads.com/shelf/list.xml?key=SgRUKzGo9czsY71QrgVw&user_id=$good_user_id");
+
+    //return contents as a variable, instead of outputting to browser
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+    //store contents in a variable
+    $contents = curl_exec($ch);
+
+    //parse XML
+    $doc = new SimpleXmlElement($contents, LIBXML_NOCDATA);
+
+    //count Items in XML
+    $cnt = count($doc->shelves->user_shelf);
+
+    //Loop through the avalible Shelf names and store them in an array
+    for ($i = 0; $i < $cnt; $i++) {
+        $shelfNames[$i] = $doc->shelves->user_shelf[$i]->name;
+    }
+
+    return($shelfNames);
+}
+
+/* * **Get Book Contents*** */
+
+function GetBooks($shelf, $id, $num) {
+    //Initialize the cURL session
+    $ch = curl_init();
+
+    //set URL. params. key = API Key. user_id = user id. per_page = num 'of displayed pages'
+    curl_setopt($ch, CURLOPT_URL,
+            "http://www.goodreads.com/review/list/$id.xml?key=SgRUKzGo9czsY71QrgVw&v=2&per_page=$num&$shelf");
+
+    //return contents as a variable, instead of outputting to browser
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+    //store contents in a variable
+    $contents = curl_exec($ch);
+
+    //parse XML
+    $doc = new SimpleXmlElement($contents, LIBXML_NOCDATA);
+
+    //count Items in XML
+    $cnt = count($doc->reviews->review);
+
+    //Loop through the avalible Shelf names and store them in an array
+    for ($i = 0; $i < $cnt; $i++) {
+        $books[$i]['title'] = $doc->reviews->review[$i]->book->title;
+        $books[$i]['image'] = $doc->reviews->review[$i]->book->small_image_url;
+        $books[$i]['link'] = $doc->reviews->review[$i]->book->link;
+    }
+
+    return($books);
+}
+
+function displayShelf($books) {
+//this will be used in future for the shortcode
+
+
+    return($books);
+}
 
 ?>
