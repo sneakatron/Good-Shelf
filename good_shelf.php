@@ -9,6 +9,23 @@
   Author URI: http://richardhole.co.uk
  * */
 
+/*  Copyright 2010  Richard Hole  (email : sneakatron@gmail.com)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as
+    published by the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+
 /* * **This is where the action begins*** */
 
 //$newShelf = new GoodShelf();
@@ -73,6 +90,9 @@ class GoodShelf extends WP_Widget {
                 echo '<option value="' . $shelves[$i] . '" selected>' . $shelves[$i] . '</option>';
             } elseif (empty($instance['shelf'])) {
                 echo '<option value="currently-reading" selected>currently-reading</option>';
+                echo '<option value="read">Read</option>';
+                echo '<option value="to-read">to-read</option>';
+                break;
             } else {
                 echo "<option value=" . $shelves[$i] . ">$shelves[$i]</option>";
             }
@@ -115,7 +135,7 @@ class GoodShelf extends WP_Widget {
         //before the widget content
         echo $before_widget;
 
-        //the title, called from the database. If it's empty then diplay a non-breaking space
+        //the title, called from the database. If it's empty then display a non-breaking space
         $title = empty($instance['title']) ? '&nbsp;' : apply_filters('widget_title', $instance['title']);
         if (!empty($title)) {
             echo $before_title . $title . $after_title;
@@ -134,7 +154,7 @@ class GoodShelf extends WP_Widget {
             echo '</ul>';
         } else {
             for ($i = 0; $i < $cnt; $i++) {
-                echo '<a href="' . $books[$i]['link'] . '" title="' . $books[$i]['title'] . '"><img src="' . $books[$i]['image'] . '" alt="' . $books[$i]['title'] . '" /></a>&nbsp;';
+                echo '<a class="goodreads_image" href="' . $books[$i]['link'] . '" title="' . $books[$i]['title'] . '"><img src="' . $books[$i]['image'] . '" alt="' . $books[$i]['title'] . '" /></a>&nbsp;';
             }
         }
 
