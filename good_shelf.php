@@ -221,7 +221,7 @@ function GetBooks($shelf, $id, $num) {
 
     //set URL. params. key = API Key. user_id = user id. per_page = num 'of displayed pages'
     curl_setopt($ch, CURLOPT_URL,
-            "http://www.goodreads.com/review/list/$id.xml?key=SgRUKzGo9czsY71QrgVw&v=2&per_page=$num&$shelf");
+            "http://www.goodreads.com/review/list/$id.xml?key=SgRUKzGo9czsY71QrgVw&v=2&per_page=$num&shelf=$shelf");
 
     //return contents as a variable, instead of outputting to browser
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
