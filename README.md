@@ -1,6 +1,6 @@
 
-##Good Shelf (yes, it's a stupid name)
-=======================================
+Good Shelf (yes, it's a stupid name)
+====================================
 
 
 Good SHelf is a basic plugin that allows the user to add a GoodReads.com shelf to their wordpress blog.
