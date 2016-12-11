@@ -159,7 +159,7 @@ class GoodShelf extends WP_Widget {
         }
 
         //link to goodreads. This must remain as it is stated in their terms of service
-        echo '<p class="goodreads_power"><a href="http://goodreads.com" title="Goodreads.com">Provided by Goodreads</a></p>';
+        echo '<p class="goodreads_power"><a href="https://goodreads.com" title="Goodreads.com">Provided by Goodreads</a></p>';
 
         //close the widget
         echo $after_widget;
@@ -191,7 +191,7 @@ function GetShelves($good_user_id) {
 
     //set URL. params. key = API Key. user_id = user id
     curl_setopt($ch, CURLOPT_URL,
-            "http://www.goodreads.com/shelf/list.xml?key=SgRUKzGo9czsY71QrgVw&user_id=$good_user_id");
+            "https://www.goodreads.com/shelf/list.xml?key=SgRUKzGo9czsY71QrgVw&user_id=$good_user_id");
 
     //return contents as a variable, instead of outputting to browser
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -221,7 +221,7 @@ function GetBooks($shelf, $id, $num) {
 
     //set URL. params. key = API Key. user_id = user id. per_page = num 'of displayed pages'
     curl_setopt($ch, CURLOPT_URL,
-            "http://www.goodreads.com/review/list/$id.xml?key=SgRUKzGo9czsY71QrgVw&v=2&per_page=$num&shelf=$shelf");
+            "https://www.goodreads.com/review/list/$id.xml?key=SgRUKzGo9czsY71QrgVw&v=2&per_page=$num&shelf=$shelf");
 
     //return contents as a variable, instead of outputting to browser
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
