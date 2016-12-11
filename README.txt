@@ -1,52 +1,76 @@
+=== Plugin Name ===
+Contributors: richhole
+Donate link: http://www.richardhole.co.uk
+Tags: goodreads, reading, reading lists, books
+Requires at least: 3.0.1
+Tested up to: 4.22
+Stable tag: trunk
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-##Good Shelf (yes, it's a stupid name)
-=======================================
+Goodshelf displays your goodreads shelves as a widget. Choose beween a link list and cover images.
 
-
-Good SHelf is a basic plugin that allows the user to add a GoodReads.com shelf to their wordpress blog.
-
-It was created so that I could display the books that i'm currently reading, 
-either displaying the book cover images, the title of the book or both.
-
-
-Usage
------
-
-upload the good_shelf.php file to your 'wp-content/plugins' folder.
-In the 'appearance > widgets' page of your wordpress admin, drag and drop the Goodshelf widget into your widgets area.
-
-Settings
---------
-
-The title option is self explanatory.
-
-The 'Gooodreads ID' option is your goodreads ID. It can be found if you go to the 'profile' section,
-under where it says 'hi YOUR USERNAME'. Once the page has loaded your ID is the characters after 'show'.
-e.g. in 'http://www.goodreads.com/user/show/1234567', '1234567' would be your ID.
-The defualt ID is my Goodreads ID. Change this, unless you want to display my excellent taste in books.
-
-The 'shelf' dropdown is where you select you shelf. If it's only displaying 'currently Reading', 'to-read' and 'read' shelves
-it's because you have to save your widget. The forementioned shelves are the defualt shelves that all Goodreads users start with.
-After you have saved your settings, your shelves should appear in the dropdown.
-
-The 'display as' option is where you select how you want the books to be displayed.
-'Cover art' wil display cover images.
-'link list' will display your books as links in an unordered list.
+== Description ==
 
 
-Styling
---------
+Goodshelf displays your goodreads shelves as a widget. Choose beween a link list and cover images.
 
-The link list items can be styled with in your CSS file with 'ul.goodreads li'.
-The cover art can be styled with '.goodreads_image'.
-The 'Provided by Goodreads' can be styled using 'p.goodreads_power'.
+* Display a shelf from your Goodreads account
 
+* choose between text links or book covers
 
+* configure how many books are displayed
 
-Important Information
----------------------
+== Installation ==
 
-You must keep the link to goodreads.com because it is stated in their terms of service.
-Please don't take this code and try to fob it off as your own. I'm giving away from the goodness of my heart.
-If you wish to contribute then by all means send me a clone request on github:
-https://github.com/sneakatron/Good-Shelf
+* upload the good_shelf.php file to your 'wp-content/plugins' folder. 
+
+* Activate the plugin in the '*plugins*' page
+
+* In the '*appearance > widgets*' page of your wordpress admin, drag and drop the Goodshelf widget into your widgets area.
+
+== Frequently Asked Questions ==
+
+= Somone else's books are being displayed =
+
+If your books are not appearing, then you are probably seeing mine. Please make sure that you have updated your Goddreads user ID.
+Your ID can be found at the end if your good reads URL e.g. http://www.goodreads.com/user/show/1234567.
+
+= How do I change the style? =
+
+If you are displaying a link list, the HTML output can be styled with: ul.goodreads.
+If you are displaying the cover images then the HTML output can be styled with a.goodreads_image
+
+= Can I change the size of the image displayed? =
+
+At present, the plugin does not have this feature, but the size can be changed in CSS using a.goodreads_image img
+
+= Can I display the name of the Author? =
+
+At present, this feature is not available.
+
+= Can I remove the 'powered by Goodreads' link? =
+
+It is within Goddreads terms of use to display a powered by link.
+
+= I can only choose beween 'currently Reading', 'to-read' and 'read' shelves =
+
+you have to save your widget. The aforementioned shelves are the defualt shelves that all Goodreads users start with. After you have saved your settings, all your shelves should appear in the dropdown.
+
+== Screenshots ==
+
+1. An example of the widget
+
+2. An example of a link list being displayed
+
+3. An example of the cover images being displayed
+
+== Changelog ==
+
+= 1.1 =
+
+* Now has widget support. Shortcode is unsupported for the time being.
+
+= 1.0 =
+
+* Uses a shortcode. No widget support
