@@ -5,7 +5,7 @@
   Plugin URI: http://richardhole.co.uk/
   Description: A plugin to display books from any given Goddreads.com shelf
   Author: Richard Hole
-  Version: 1.0
+  Version: 1.1
   Author URI: http://richardhole.co.uk
  * */
 
@@ -53,7 +53,7 @@ class GoodShelf extends WP_Widget {
             $instance['good_user_id'] = '1553338';
         }
 
-        //check that an ID has been added. If not use my ID (hopeto change this in future)
+        //Number of items to display
         if (empty($instance['no_items'])) {
             $instance['no_items'] = '5';
         }
@@ -100,20 +100,26 @@ class GoodShelf extends WP_Widget {
 
         echo '</select></p>'; //dropdown end
 
-        /*         * display options dropdown** */
-        //label
+        /*** display options dropdown****/
+			//Display labellabel
         echo '<p><label for="' . $this->get_field_id('display_options') . '">Display as:</label><br />';
         echo '<select name="' . $this->get_field_name('display_options') . '">'; //dropdown start
-
-        if ($instance['display_options'] == 'cover art' || empty($instance['display_options'])) {
+		//if user has selected and saved cover art then display cover art as selected
+        if ($instance['display_options'] == 'cover art') {
             echo '<option value="cover art" selected>Cover art</option>';
             echo '<option value="link List">Link list</option>';
-        } elseif ($instance['display_options'] == 'linklist') {
+	//if user has selected and saved link list then display link list as selected
+        } elseif ($instance['display_options'] == 'link List') {
             echo '<option value="cover art">Cover art</option>';
             echo '<option value="link List" selected>Link list</option>';
         }
+		elseif (empty($instance['display_options'])) {
+            echo '<option value="cover art">Cover art</option>';
+            echo '<option value="link List">Link list</option>';
+        }
 
         echo '</select></p>'; //dropdown end
+
     }
 
     function update($new_instance, $old_instance) {
@@ -125,6 +131,7 @@ class GoodShelf extends WP_Widget {
         $instance['no_items'] = strip_tags($new_instance['no_items']);
         $instance['good_user_id'] = strip_tags($new_instance['good_user_id']);
         $instance['no_items'] = strip_tags($new_instance['no_items']);
+		$instance['display_options'] = strip_tags($new_instance['display_options']);
         return $instance;
     }
 
@@ -146,7 +153,7 @@ class GoodShelf extends WP_Widget {
         $cnt = count($books);
 
         //Display a list of links to books if it has been selected else display cover images
-        if ($instance['display_options' == 'link list']) {
+        if ($instance['display_options'] == 'link List') {
             echo '<ul class="goodreads">';
             for ($i = 0; $i < $cnt; $i++) {
                 echo '<li><a href="' . $books[$i]['link'] . '" title="' . $books[$i]['title'] . '">' . $books[$i]['title'] . '</a></li>';
@@ -180,7 +187,7 @@ add_action('widgets_init', 'registerwidget');
 
 
 
-/* * **Get a list of the Users Shelves*** */
+/**** Get a list of the Users Shelves from Goodreads using CURL ****/
 
 function GetShelves($good_user_id) {
 
